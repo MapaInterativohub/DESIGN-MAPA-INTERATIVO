@@ -1,0 +1,15 @@
+#save-pdf-btn {
+  background: #2ecc71;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+  transition: 0.3s;
+}
+#save-pdf-btn:hover {
+  background: #27ae60;
+}

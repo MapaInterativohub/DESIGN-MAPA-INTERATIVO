@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa Interativo</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- SEUS CSS -->
+  <link rel="stylesheet" href="css/RemoveBackground.css">
+  <link rel="stylesheet" href="css/MenuLateral.css">
+  <link rel="stylesheet" href="css/PopUp.css">
+  <link rel="stylesheet" href="css/Filtro.css">
+  <link rel="stylesheet" href="css/BarraDePesquisa.css">
+  <link rel="stylesheet" href="css/BaixarPDF.css">
+  <link rel="stylesheet" href="css/Responsividade.css">
+  <link rel="stylesheet" href="css/BotãoDeAlerta.css">
+  <link rel="stylesheet" href="css/BotãoZoom.css">
+  
+  <style>
+    /* ESTILOS ADICIONAIS PARA O MENU LATERAL FUNCIONAL */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -320px;
+      width: 300px;
+      height: 100%;
+      background: white;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+      transition: left 0.3s ease;
+      z-index: 1100;
+      padding: 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar.active {
+      left: 0;
+    }
+    
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1099;
+      display: none;
+    }
+    
+    .sidebar-overlay.active {
+      display: block;
+    }
+    
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      background: #f8f9fa;
+    }
+    
+    .sidebar h2 {
+      margin: 0;
+      color: #333;
+      font-size: 1.3rem;
+    }
+    
+    .close-sidebar {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+      padding: 5px;
+    }
+    
+    /* ABAS DO MENU */
+    .menu-tabs {
+      display: flex;
+      border-bottom: 1px solid #eee;
+      background: #f8f9fa;
+    }
+    
+    .menu-tab {
+      flex: 1;
+      padding: 12px 15px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      color: #666;
+      transition: all 0.3s;
+      border-bottom: 3px solid transparent;
+    }
+    
+    .menu-tab.active {
+      color: #007bff;
+      border-bottom-color: #007bff;
+      background: white;
+    }
+    
+    .menu-tab:hover {
+      background: rgba(0,123,255,0.1);
+    }
+    
+    /* CONTEÚDO DAS ABAS */
+    .tab-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+    
+    .tab-pane {
+      display: none;
+      padding: 20px;
+      height: 100%;
+    }
+    
+    .tab-pane.active {
+      display: block;
+    }
+    
+    /* LISTA DE FAVORITOS */
+    .favoritos-lista {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .favorito-item {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 4px solid #007bff;
+    }
+    
+    .favorito-item h4 {
+      margin: 0 0 5px 0;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .favorito-item p {
+      margin: 2px 0;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .btn-remover-favorito {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      margin-top: 5px;
+    }
+    
+    .btn-remover-favorito:hover {
+      background: #c0392b;
+    }
+    
+    /* LISTA DE HISTÓRICO */
+    .historico-lista {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .historico-item {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 4px solid #28a745;
+    }
+    
+    .historico-item h4 {
+      margin: 0 0 5px 0;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .historico-item p {
+      margin: 2px 0;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    /* BOTÃO DOWNLOAD PDF */
+    .btn-download-pdf {
+      width: 100%;
+      padding: 12px;
+      background: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background 0.3s;
+    }
+    
+    .btn-download-pdf:hover {
+      background: #27ae60;
+    }
+    
+    .btn-download-pdf:disabled {
+      background: #95a5a6;
+      cursor: not-allowed;
+    }
+    
+    /* MENSAGENS VAZIAS */
+    .sem-favoritos, .sem-historico {
+      text-align: center;
+      color: #999;
+      font-style: italic;
+      padding: 20px;
+    }
+    
+    /* BARRA DE PESQUISA ATUALIZADA */
+    .search-container {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      max-width: 80%;
+      background: white;
+      border-radius: 30px;
+      padding: 8px 15px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      z-index: 1000;
+    }
+    
+    .menu-toggle {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #555;
+      cursor: pointer;
+      margin-right: 10px;
+      padding: 5px;
+    }
+    
+    .search-container input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 14px;
+      padding: 8px 10px;
+      border-radius: 30px;
+    }
+    
+    .search-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #555;
+      font-size: 16px;
+      margin-left: 8px;
+    }
+    
+    /* RESPONSIVIDADE */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 280px;
+      }
+      
+      .search-container {
+        width: 90%;
+        max-width: 400px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .sidebar {
+        width: 260px;
+      }
+      
+      .search-container {
+        width: 95%;
+        padding: 6px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- BARRA DE PESQUISA COM MENU HAMBURGUER -->
+  <div class="search-container">
+    <button id="menu-toggle" class="menu-toggle">
+      <i class="fas fa-bars"></i>
+    </button>
+    <input type="text" id="search-input" placeholder="Pesquisar locais..." />
+    <button id="search-btn" class="search-btn">
+      <i class="fas fa-search"></i>
+    </button>
+  </div>
+
+  <!-- OVERLAY PARA FECHAR O MENU -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- MENU LATERAL FUNCIONAL -->
+  <nav id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <h2>Menu</h2>
+      <button id="close-sidebar" class="close-sidebar">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <!-- ABAS DO MENU -->
+    <div class="menu-tabs">
+      <button class="menu-tab active" data-tab="favoritos">
+        <i class="fas fa-star"></i> Favoritos
+      </button>
+      <button class="menu-tab" data-tab="historico">
+        <i class="fas fa-history"></i> Histórico
+      </button>
+    </div>
+    
+    <!-- CONTEÚDO DAS ABAS -->
+    <div class="tab-content">
+
+      <!-- ABA FAVORITOS -->
+      <div class="tab-pane active" id="tab-favoritos">
+        <h3 style="margin-top: 0; color: #333;">⭐ Meus Favoritos</h3>
+        <div class="favoritos-lista" id="favoritos-lista">
+          <p class="sem-favoritos">Nenhum local favoritado ainda</p>
+        </div>
+        <button class="btn-download-pdf" id="btn-download-pdf" disabled>
+          <i class="fas fa-file-pdf"></i> Baixar PDF dos Favoritos
+        </button>
+      </div>
+      
+      <!-- ABA HISTÓRICO -->
+      <div class="tab-pane" id="tab-historico">
+        <h3 style="margin-top: 0; color: #333;">🕓 Históricos</h3>
+        <div class="historico-lista" id="historico-lista">
+          <p class="sem-historico">Nenhum local visitado ainda</p>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- FILTROS NO MAPA -->
+  <div class="filters">
+    <button class="filter-btn ativo" data-category="Todos">Todos</button>
+    <button class="filter-btn" data-category="Serviços Sociais">Serviços</button>
+    <button class="filter-btn" data-category="Estudos">Estudos</button>
+    <button class="filter-btn" data-category="Segurança">Segurança</button>
+    <button class="filter-btn" data-category="Saúde">Saúde</button>
+  </div>
+
+  <!-- BOTÃO DE ALERTA -->
+  <button id="alert-btn">🚨</button>
+
+  <!-- MAPA -->
+  <div id="map"></div>
+
+  <!-- SCRIPTS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- SEUS JS (ORDEM CORRETA) -->
+  <script src="js/scripts.js"></script>
+  <script src="js/FavoritosManager.js"></script>
+  <script src="js/SistemaDeFiltros.js"></script>
+  <script src="js/Pesquisar.js"></script>
+  <script src="js/BotãoDeAlerta.js"></script>
+  <script src="js/PdfGenerator.js"></script>
+  
+  <script>
+
+    // SISTEMA DE MENU LATERAL 
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.getElementById('menu-toggle');
+      const sidebar = document.getElementById('sidebar');
+      const closeSidebar = document.getElementById('close-sidebar');
+      const sidebarOverlay = document.getElementById('sidebar-overlay');
+      const menuTabs = document.querySelectorAll('.menu-tab');
+      const tabPanes = document.querySelectorAll('.tab-pane');
+      const btnDownloadPDF = document.getElementById('btn-download-pdf');
+      
+      // Abrir menu lateral
+      menuToggle.addEventListener('click', function() {
+        sidebar.classList.add('active');
+        sidebarOverlay.classList.add('active');
+        
+        // Atualizar lista de favoritos ao abrir o menu
+        if (window.favoritosManager) {
+          window.favoritosManager.renderizarFavoritos();
+          window.favoritosManager.renderizarHistorico();
+          atualizarEstadoBotaoPDF();
+        }
+      });
+      
+      // Fechar menu lateral
+      function closeMenu() {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+      }
+      
+      closeSidebar.addEventListener('click', closeMenu);
+      sidebarOverlay.addEventListener('click', closeMenu);
+      
+      // Alternar entre abas
+      menuTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          const targetTab = this.getAttribute('data-tab');
+          
+          // Remove classe active de todas as abas
+          menuTabs.forEach(t => t.classList.remove('active'));
+          tabPanes.forEach(p => p.classList.remove('active'));
+          
+          // Adiciona classe active na aba clicada
+          this.classList.add('active');
+          document.getElementById(`tab-${targetTab}`).classList.add('active');
+          
+          // Atualiza os dados da aba se necessário
+          if (targetTab === 'favoritos' && window.favoritosManager) {
+            window.favoritosManager.renderizarFavoritos();
+            atualizarEstadoBotaoPDF();
+          } else if (targetTab === 'historico' && window.favoritosManager) {
+            window.favoritosManager.renderizarHistorico();
+          }
+        });
+      });
+      
+      // Download de PDF
+      btnDownloadPDF.addEventListener('click', function() {
+        if (window.pdfGenerator) {
+          window.pdfGenerator.gerarPDF();
+        } else {
+          alert('Sistema de PDF não carregado!');
+        }
+      });
+      
+      // Atualizar estado do botão PDF baseado nos favoritos
+      function atualizarEstadoBotaoPDF() {
+        if (window.favoritosManager) {
+          const favoritos = window.favoritosManager.favoritos;
+          if (favoritos.length > 0) {
+            btnDownloadPDF.disabled = false;
+            btnDownloadPDF.title = `Baixar PDF com ${favoritos.length} favoritos`;
+          } else {
+            btnDownloadPDF.disabled = true;
+            btnDownloadPDF.title = 'Adicione favoritos para gerar PDF';
+          }
+        }
+      }
+      
+      // Fechar menu ao pressionar ESC
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeMenu();
+        }
+      });
+      
+      // Inicializar estado do botão PDF
+      setTimeout(() => {
+        atualizarEstadoBotaoPDF();
+      }, 1000);
+    });
+    
+    // Atualizar FavoritosManager para ser mais robusto
+    if (typeof FavoritosManager !== 'undefined') {
+      // Sobrescrever métodos para atualizar a UI automaticamente
+      const originalAdicionarFavorito = FavoritosManager.prototype.adicionarFavorito;
+      FavoritosManager.prototype.adicionarFavorito = function(local) {
+        const resultado = originalAdicionarFavorito.call(this, local);
+        if (resultado) {
+          this.renderizarFavoritos();
+          // Atualizar estado do botão PDF
+          const btnPDF = document.getElementById('btn-download-pdf');
+          if (btnPDF) {
+            btnPDF.disabled = false;
+            btnPDF.title = `Baixar PDF com ${this.favoritos.length} favoritos`;
+          }
+        }
+        return resultado;
+      };
+      
+      const originalRemoverFavorito = FavoritosManager.prototype.removerFavorito;
+      FavoritosManager.prototype.removerFavorito = function(nomeLocal) {
+        originalRemoverFavorito.call(this, nomeLocal);
+        // Atualizar estado do botão PDF
+        const btnPDF = document.getElementById('btn-download-pdf');
+        if (btnPDF) {
+          if (this.favoritos.length === 0) {
+            btnPDF.disabled = true;
+            btnPDF.title = 'Adicione favoritos para gerar PDF';
+          } else {
+            btnPDF.title = `Baixar PDF com ${this.favoritos.length} favoritos`;
+          }
+        }
+      };
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+/* Barra de pesquisa com botão de menu */
+.top-bar {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 30px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  padding: 6px 10px;
+  width: 400px;
+}
+
+.search-container input {
+  border: none;
+  outline: none;
+  flex: 1;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.search-container .menu-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #555;
+  margin-right: 8px;
+}
+
+.search-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  font-size: 18px;
+}
+
+/* Menu lateral */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px; /* escondido inicialmente */
+  width: 280px;
+  height: 100%;
+  background: #fff;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  transition: left 0.3s ease;
+  z-index: 1100;
+  padding: 20px;
+}
+
+.sidebar.active {
+  left: 0; /* aparece na tela */
+}
+
+.sidebar h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.sidebar ul li {
+  margin-bottom: 15px;
+}
+
+.sidebar ul li a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.sidebar ul li a:hover {
+  color: #007bff;
+}
