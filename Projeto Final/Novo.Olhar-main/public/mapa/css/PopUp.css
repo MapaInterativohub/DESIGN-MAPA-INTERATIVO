@@ -1,0 +1,32 @@
+.leaflet-popup-content-wrapper {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.popup-content {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #202020;
+}
+.popup-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #333;
+}
+.popup-content p {
+  margin: 10px 0;
+}
+.popup-btn {
+  display: inline-block;
+  padding: 8px 12px;
+  background-color: #007BFF;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+.popup-btn:hover {
+  background-color: #0056b3;
+}
